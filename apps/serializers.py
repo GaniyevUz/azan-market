@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework.fields import CurrentUserDefault, HiddenField, IntegerField
 from rest_framework.serializers import ModelSerializer
 
@@ -26,7 +27,9 @@ class WishListModelSerializer(ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
     def to_representation(self, instance):
-        wishlist = {'products': list(instance.product.values('id', 'name', 'price', 'category', 'description'))}
+        wishlist = {'status': False, 'message': 'Your basket is empty'}
+        if hasattr(instance, 'product'):
+            wishlist = {'products': list(instance.product.values('id', 'name', 'price', 'category', 'description'))}
         return wishlist
 
 
@@ -39,18 +42,49 @@ class CreateWishListModelSerializer(ModelSerializer):
         fields = ('id', 'product', 'user')
 
     def create(self, validated_data):
-        # user = User.objects.get(id=validated_data['user'].id)
-        user = validated_data['user']
-        user.wishlist.product.add(validated_data['product'])
-        user.save()
-        return user.wishlist
+        product = Product.objects.filter(id=validated_data['product']).first()
+        if product:
+            user = validated_data['user']
+            wishlist, _ = Wishlist.objects.get_or_create(user=user)
+            wishlist.product.add(product)
+            return wishlist
+        return {'status': False, 'message': 'product not found'}
 
     def to_representation(self, instance):
-        return {'status': 'product has been added to wishlist'}
+        if isinstance(instance, Wishlist):
+            return {'status': True, 'message': 'product has been added to wishlist'}
+        return instance
 
 
 class BasketModelSerializer(ModelSerializer):
+    user = HiddenField(default=CurrentUserDefault())
+
     class Meta:
         model = Basket
-        fields = ('id', 'product', 'user', 'created_at', 'updated_at')
+        fields = ('id', 'product', 'user', 'quantity', 'created_at', 'updated_at')
         read_only_fields = ('created_at', 'updated_at')
+
+    def to_representation(self, instance):
+        basket = {'status': False, 'message': 'Your basket is empty'}
+        if hasattr(instance, 'product'):
+            basket = {'products': list(instance.product.values('id', 'name', 'price', 'category', 'description'))}
+        return basket
+
+
+class CreateBasketModelSerializer(ModelSerializer):
+    user = HiddenField(default=CurrentUserDefault())
+    product = IntegerField()
+
+    class Meta:
+        model = Basket
+        fields = ('id', 'product', 'user', 'quantity', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
+
+    def create(self, validated_data):
+        user = validated_data['user']
+        user.basket.product.add(validated_data['product'])
+        user.save()
+        return user.basket
+
+    def to_representation(self, instance):
+        return {'status': True, 'message': 'product has been added to your basket'}

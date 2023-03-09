@@ -11,7 +11,7 @@ class BaseModel(Model):
 
 
 class ProductImage(BaseModel):
-    product = ForeignKey('apps.Product', on_delete=CASCADE)
+    product = ForeignKey('apps.Product', CASCADE)
     image = ImageField(upload_to='products/')
 
     def __str__(self):
@@ -24,12 +24,12 @@ class ProductImage(BaseModel):
 
 
 class Basket(BaseModel):
-    user = OneToOneField('apps.User', on_delete=CASCADE)
-    product = ForeignKey('apps.Product', on_delete=CASCADE)
+    user = ForeignKey('apps.User', CASCADE)
+    product = ForeignKey('apps.Product', CASCADE)
     quantity = PositiveIntegerField(default=1)
 
     def __str__(self):
-        return self.product.name
+        return f"{self.user} {self.product.name} - {self.quantity}"
 
     class Meta:
         db_table = 'baskets'
@@ -38,7 +38,7 @@ class Basket(BaseModel):
 
 
 class Wishlist(BaseModel):
-    user = OneToOneField('apps.User', on_delete=CASCADE)
+    user = OneToOneField('apps.User', CASCADE)
     product = ManyToManyField('apps.Product', related_name='products')
 
     def __str__(self):

@@ -6,7 +6,7 @@ from apps.models.product_handout import BaseModel
 
 class Product(BaseModel):
     name = CharField(max_length=255)
-    price = DecimalField(max_digits=10, decimal_places=3)
+    price = DecimalField(max_digits=10, decimal_places=2)
     description = TextField()
     category = ForeignKey('apps.Category', on_delete=CASCADE)
     quantity = PositiveBigIntegerField(default=1)
