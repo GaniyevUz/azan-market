@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "azan-market"
+version = "0.1.0"
+description = ""
+authors = ["jakhongir <ganiyevuzb@gmail.com>"]
+readme = "README.md"
+packages = [{include = "azan_market"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.1.7"
+drf-yasg = "^1.21.5"
+djangorestframework = "^3.14.0"
+djangorestframework-simplejwt = "^5.2.2"
+django-filter = "^22.1"
+pillow = "^9.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
