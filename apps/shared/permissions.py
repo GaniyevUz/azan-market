@@ -10,3 +10,14 @@ class IsAdminUser(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return bool(request.user and request.user.is_staff or request.user.is_superuser)
+
+
+class IsAuthenticatedOrNewUSer(BasePermission):
+    """
+    Allows access only to authenticated users.
+    """
+
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
+        return bool(request.user and request.user.is_authenticated)

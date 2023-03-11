@@ -1,8 +1,7 @@
-from rest_framework.fields import CurrentUserDefault, HiddenField, IntegerField, ImageField
-from rest_framework.serializers import ModelSerializer, ImageField
+from rest_framework.fields import CurrentUserDefault, HiddenField, IntegerField
+from rest_framework.serializers import ModelSerializer
 
-from apps.models import Product, Wishlist, Category, Basket
-from apps.models.product_handout import ProductImage
+from apps.models import Product, Wishlist, Category, Basket, ProductImage
 
 
 class ProductImageSerializer(ModelSerializer):
@@ -55,13 +54,8 @@ class WishListModelSerializer(ModelSerializer):
         if product:
             user = validated_data['user']
             wishlist, _ = Wishlist.objects.get_or_create(user=user, product=product)
-            return wishlist
+            return {'status': True, 'message': 'product has been added to wishlist'}
         return {'status': False, 'message': 'product not found'}
-
-    # def to_representation(self, instance):
-    #     if isinstance(instance, Wishlist):
-    #         return {'status': True, 'message': 'product has been added to wishlist'}
-    #     return instance
 
     def to_representation(self, instance):
         wishlist = {'status': False, 'message': 'Your basket is empty'}
@@ -72,7 +66,7 @@ class WishListModelSerializer(ModelSerializer):
 
 class BasketModelSerializer(ModelSerializer):
     user = HiddenField(default=CurrentUserDefault())
-    product = IntegerField()
+    # product = IntegerField()
 
     class Meta:
         model = Basket
