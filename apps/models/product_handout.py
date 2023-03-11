@@ -10,6 +10,7 @@ class BaseModel(Model):
         abstract = True
 
 
+#
 class ProductImage(BaseModel):
     product = ForeignKey('apps.Product', CASCADE)
     image = ImageField(upload_to='products/')
@@ -38,11 +39,13 @@ class Basket(BaseModel):
 
 
 class Wishlist(BaseModel):
-    user = OneToOneField('apps.User', CASCADE)
-    product = ManyToManyField('apps.Product', related_name='products')
+    # user = OneToOneField('apps.User', CASCADE)
+    # product = ManyToManyField('apps.Product', related_name='products')
+    user = ForeignKey('apps.User', CASCADE)
+    product = ForeignKey('apps.Product', CASCADE)
 
     def __str__(self):
-        return self.product.first().name
+        return self.user_set.first().phone
 
     class Meta:
         db_table = 'wishlists'
