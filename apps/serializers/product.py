@@ -91,7 +91,7 @@ class BasketModelSerializer(ModelSerializer):
         if not isinstance(product, Product):
             product = Product.objects.filter(id=product).first()
         if product:
-            if product.quantity < validated_data['quantity'] or product.quantity < 1:
+            if product['quantity'] < validated_data['quantity'] or product.quantity < 1:
                 return {'status': False, 'message': 'product quantity is not enough'}
             user = validated_data['user']
             basket, _ = Basket.objects.get_or_create(user=user, product=product)
