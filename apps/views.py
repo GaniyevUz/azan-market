@@ -87,6 +87,6 @@ class UserModelViewSet(generics.CreateAPIView, generics.RetrieveUpdateDestroyAPI
     def get_object(self):
         return self.request.user
 
-    def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response({'status': True, 'message': 'We have sent you a verification code to your phone number'})
+    # def create(self, request, *args, **kwargs):
+    #     super().create(request, *args, **kwargs)
+    #     return Response({'status': True, 'message': 'We have sent you a verification code to your phone number'})
