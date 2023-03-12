@@ -16,7 +16,7 @@ class ProductModelSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'category', 'description', 'images', 'price', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'category', 'description', 'images', 'price', 'quantity', 'created_at', 'updated_at')
         read_only_fields = ('created_at', 'updated_at')
 
     def create(self, validated_data):
@@ -90,7 +90,7 @@ class BasketModelSerializer(ModelSerializer):
         product = Product.objects.filter(id=validated_data['product']).first()
         if product:
             user = validated_data['user']
-            basket, _ = Basket.objects.get_or_create(user=user, product=product)
+            basket, _ = Basket.objects.get_or_create(user=user, product=product.id)
             return basket
         return {'status': False, 'message': 'product not found'}
 
