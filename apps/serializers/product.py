@@ -98,6 +98,6 @@ class BasketModelSerializer(ModelSerializer):
             return basket
         return {'status': False, 'message': 'product not found'}
 
-    def to_representation(self, instance):
-        basket = ProductModelSerializer(instance.product).data
-        return basket
+    # def to_representation(self, instance):
+    #     basket = ProductModelSerializer(instance.product).data
+    #     return basket
