@@ -1,9 +1,8 @@
-from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from apps.models import User
-from apps.shared.verification import send, check
+from apps.shared.verification import send_verification_code
 
 
 class UserModelSerializer(ModelSerializer):
@@ -13,13 +12,8 @@ class UserModelSerializer(ModelSerializer):
 
     def create(self, validated_data):
         phone = validated_data['phone']
-        user = User.objects.create(phone=phone, is_active=False)
+        user, _ = User.objects.get_or_create(phone=phone)
         user.set_password(phone)
         user.save()
-        send(phone, True)
+        send_verification_code(phone, fake=True)
         return user
-
-
-class UserAccountActivatonSerializer(Serializer):
-    phone = CharField(max_length=11)
-    code = CharField(max_length=4)

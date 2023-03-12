@@ -149,7 +149,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 }
-
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Bearer': {
@@ -166,10 +165,15 @@ SWAGGER_SETTINGS = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
-    # 'UPDATE_LAST_LOGIN': True,
-
+    'UPDATE_LAST_LOGIN': True,
+    'TOKEN_OBTAIN_SERIALIZER': 'apps.shared.backends.PhoneVerificationTokenObtainPairSerializer',
 }
+
+AUTHENTICATION_BACKENDS = ['apps.shared.backends.CustomAuthenticationBackend']
 
 TWILIO_VERIFY_SERVICE_SID = env('TWILIO_VERIFY_SERVICE_SID')
 TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52214400
+SILENCED_SYSTEM_CHECKS = ['auth.W004']

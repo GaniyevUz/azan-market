@@ -11,16 +11,17 @@ verify = client.verify.services(TWILIO_VERIFY_SERVICE_SID)
 fake_code = None
 
 
-def send(phone, fake=False):
+def send_verification_code(phone, fake=False):
     if fake:
         global fake_code
         fake_code = randint(1000, 9999)
         print(fake_code)
-        return
+        return fake_code
     verify.verifications.create(to=phone, channel='sms')
+    print('yes')
 
 
-def check(phone, code, fake=False):
+def check_verification_code(phone, code, fake=False):
     if fake:
         global fake_code
         return fake_code == int(code)

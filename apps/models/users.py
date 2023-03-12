@@ -6,7 +6,7 @@ from django.db.models import CharField
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, phone, password, **extra_fields):
+    def _create_user(self, phone, password=None, **extra_fields):
         if not phone:
             raise ValueError('The given phone must be set')
         user = self.model(phone=phone, **extra_fields)
@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    phone = CharField(max_length=255, unique=True)
+    phone = CharField(max_length=255)
     username = None
     email = None
     USERNAME_FIELD = 'phone'

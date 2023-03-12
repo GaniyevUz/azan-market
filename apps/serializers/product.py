@@ -1,37 +1,49 @@
+from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault, HiddenField, IntegerField
 from rest_framework.serializers import ModelSerializer
 
 from apps.models import Product, Wishlist, Category, Basket, ProductImage
 
 
-class ProductImageSerializer(ModelSerializer):
+class CreateProductImageSerializer(ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ('id', 'image')
+        fields = ('id', 'image', 'product')
 
 
 class ProductModelSerializer(ModelSerializer):
-    # images = ProductImageSerializer(many=True)
+    images = serializers.ListField(write_only=True)
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'category', 'description', 'price', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'category', 'description', 'images', 'price', 'created_at', 'updated_at')
         read_only_fields = ('created_at', 'updated_at')
 
-    # def create(self, validated_data):
-    #     images_data = validated_data.pop('images', [])
-    #     product = Product.objects.create(**validated_data)
-    #     for image_data in images_data:
-    #         ProductImage.objects.create(product=product, **image_data)
-    #     return product
-    #
-    # def update(self, instance, validated_data):
-    #     images_data = validated_data.pop('images', [])
-    #     instance = super().update(instance, validated_data)
-    #     instance.images.all().delete()
-    #     for image_data in images_data:
-    #         ProductImage.objects.create(product=instance, **image_data)
-    #     return instance
+    def create(self, validated_data):
+        images_data = validated_data.pop('images', [])
+        product = Product.objects.create(**validated_data)
+        for image_data in images_data:
+            ser = CreateProductImageSerializer(data={'image': image_data, 'product': product.id})
+            ser.is_valid(raise_exception=True)
+            ser.save()
+        return product
+
+    def update(self, instance, validated_data):
+        images_data = validated_data.pop('images', [])
+        instance = super().update(instance, validated_data)
+        instance.images.all().delete()
+        for image_data in images_data:
+            image = CreateProductImageSerializer(data={'image': image_data, 'product': instance.id})
+            image.is_valid(raise_exception=True)
+            image.save()
+        return instance
+
+    def to_representation(self, instance):
+        product = super().to_representation(instance)
+        product['images'] = [i.image.url for i in instance.productimage_set.all()]
+        product.move_to_end('created_at')
+        product.move_to_end('updated_at')
+        return product
 
 
 class CategoryModelSerializer(ModelSerializer):
@@ -66,6 +78,7 @@ class WishListModelSerializer(ModelSerializer):
 
 class BasketModelSerializer(ModelSerializer):
     user = HiddenField(default=CurrentUserDefault())
+
     # product = IntegerField()
 
     class Meta:

@@ -9,9 +9,9 @@ from root import settings
 
 urlpatterns = [
     path('api/v1/', include('apps.urls')),
-    path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
 
 if settings.DEBUG:
