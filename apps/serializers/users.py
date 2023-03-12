@@ -15,5 +15,8 @@ class UserModelSerializer(ModelSerializer):
         user, _ = User.objects.get_or_create(phone=phone)
         user.set_password(phone)
         user.save()
-        send_verification_code(phone, fake=True)
         return user
+
+    def to_representation(self, instance):
+        code = send_verification_code(instance.phone, fake=True)
+        return {'phone': instance.phone, 'verification_code': code}
