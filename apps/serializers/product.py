@@ -87,15 +87,15 @@ class BasketModelSerializer(ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
     def create(self, validated_data):
-        product = Product.objects.filter(id=validated_data['product']).first()
+        product = validated_data['product']
+        if not isinstance(product, Product):
+            product = Product.objects.filter(id=product).first()
         if product:
             user = validated_data['user']
-            basket, _ = Basket.objects.get_or_create(user=user, product=product.id)
+            basket, _ = Basket.objects.get_or_create(user=user, product=product)
             return basket
         return {'status': False, 'message': 'product not found'}
 
     def to_representation(self, instance):
-        basket = {'status': False, 'message': 'Your basket is empty'}
-        if isinstance(instance, Basket):
-            basket = ProductModelSerializer(instance.product).data
+        basket = ProductModelSerializer(instance.product).data
         return basket

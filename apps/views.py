@@ -55,6 +55,18 @@ class WishListAPIView(ModelViewSet):
         return Response({'status': False, 'message': 'Product not found from your wishlist'},
                         status=status.HTTP_404_NOT_FOUND)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data) if serializer.data else \
+            Response({'status': False, 'message': 'Your wishlist is empty'})
+
 
 class BasketModelViewSet(ModelViewSet):
     queryset = Basket.objects.all()
@@ -64,6 +76,18 @@ class BasketModelViewSet(ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().filter(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data) if serializer.data else \
+            Response({'status': False, 'message': 'Your basket is empty'})
 
     def destroy(self, request, *args, **kwargs):
         """***Delete product from user's basket**"""
