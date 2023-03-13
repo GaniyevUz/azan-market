@@ -66,7 +66,9 @@ class WishListModelSerializer(ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
     def create(self, validated_data):
-        product = Product.objects.filter(id=validated_data['product']).first()
+        product = validated_data.get('product')
+        if not isinstance(product, Product):
+            product = Product.objects.filter(id=product).first()
         if product:
             user = validated_data['user']
             wishlist, _ = Wishlist.objects.get_or_create(user=user, product=product)
