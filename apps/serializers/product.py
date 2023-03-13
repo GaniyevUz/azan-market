@@ -76,10 +76,9 @@ class WishListModelSerializer(ModelSerializer):
         return {'status': False, 'message': 'product not found'}
 
     def to_representation(self, instance):
-        wishlist = {'status': False, 'message': 'Your basket is empty'}
-        if hasattr(instance, 'product'):
-            wishlist = ProductModelSerializer(instance.product).data
-        return wishlist
+        if not isinstance(instance, dict):
+            instance = ProductModelSerializer(instance.product).data
+        return instance
 
     @property
     def data(self):
