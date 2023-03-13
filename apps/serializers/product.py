@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CurrentUserDefault, HiddenField, IntegerField
 from rest_framework.serializers import ModelSerializer
 
@@ -45,6 +46,10 @@ class ProductModelSerializer(ModelSerializer):
         product.move_to_end('updated_at')
         return product
 
+    @property
+    def data(self):
+        return self.to_representation(self.instance)
+
 
 class CategoryModelSerializer(ModelSerializer):
     class Meta:
@@ -54,7 +59,6 @@ class CategoryModelSerializer(ModelSerializer):
 
 class WishListModelSerializer(ModelSerializer):
     user = HiddenField(default=CurrentUserDefault())
-    product = IntegerField()
 
     class Meta:
         model = Wishlist
@@ -75,11 +79,13 @@ class WishListModelSerializer(ModelSerializer):
             wishlist = ProductModelSerializer(instance.product).data
         return wishlist
 
+    @property
+    def data(self):
+        return self.to_representation(self.instance)
+
 
 class BasketModelSerializer(ModelSerializer):
     user = HiddenField(default=CurrentUserDefault())
-
-    # product = IntegerField()
 
     class Meta:
         model = Basket
@@ -87,17 +93,40 @@ class BasketModelSerializer(ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
     def create(self, validated_data):
-        product = validated_data['product']
+        product = validated_data.get('product')
         if not isinstance(product, Product):
             product = Product.objects.filter(id=product).first()
         if product:
             if getattr(product, 'quantity') < validated_data['quantity'] or product.quantity < 1:
-                return {'status': False, 'message': 'product quantity is not enough'}
+                raise ValidationError({'status': False, 'message': 'This product is out of stock for this quantity'})
             user = validated_data['user']
             basket, _ = Basket.objects.get_or_create(user=user, product=product)
             return basket
-        return {'status': False, 'message': 'product not found'}
+        raise ValidationError({'status': False, 'message': 'product not found'})
 
-    # def to_representation(self, instance):
-    #     basket = ProductModelSerializer(instance.product).data
-    #     return basket
+    def to_representation(self, instance):
+        basket = ProductModelSerializer(instance.product).data
+        return basket
+
+
+class UpdateBasketModelSerializer(ModelSerializer):
+    user = HiddenField(default=CurrentUserDefault())
+    quantity = IntegerField(min_value=1)
+
+    class Meta:
+        model = Basket
+        fields = ('id', 'user', 'quantity')
+
+    def update(self, instance, validated_data):
+        quantity = validated_data.get('quantity')
+        if not isinstance(instance, Basket):
+            instance = Basket.objects.filter(id=instance).first()
+        if instance.product.quantity < quantity or quantity < 1:
+            raise ValidationError({'status': False, 'message': 'This product is out of stock for this quantity'})
+        instance.quantity = quantity
+        instance.save()
+        return instance
+
+    # @property
+    # def data(self):
+    #     return BasketModelSerializer(self.instance).data

@@ -10,6 +10,7 @@ from apps.models import Product, Category, Wishlist, Basket, User
 from apps.serializers import ProductModelSerializer, \
     WishListModelSerializer, CategoryModelSerializer, \
     BasketModelSerializer
+from apps.serializers.product import UpdateBasketModelSerializer
 from apps.serializers.users import UserModelSerializer
 from apps.shared import permissions, filters as custom_filters
 
@@ -56,16 +57,8 @@ class WishListAPIView(ModelViewSet):
                         status=status.HTTP_404_NOT_FOUND)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data) if serializer.data else \
-            Response({'status': False, 'message': 'Your wishlist is empty'})
+        data = super().list(request, *args, **kwargs).data
+        return Response(data) if data else Response({'status': False, 'message': 'Your wishlist is empty'})
 
 
 class BasketModelViewSet(ModelViewSet):
@@ -78,16 +71,13 @@ class BasketModelViewSet(ModelViewSet):
         return super().get_queryset().filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        data = super().list(request, *args, **kwargs).data
+        return Response(data) if data else Response({'status': False, 'message': 'Your basket is empty'})
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data) if serializer.data else \
-            Response({'status': False, 'message': 'Your basket is empty'})
+    def get_serializer_class(self):
+        if self.action == 'partial_update':
+            return UpdateBasketModelSerializer
+        return super().get_serializer_class()
 
     def destroy(self, request, *args, **kwargs):
         """***Delete product from user's basket**"""
